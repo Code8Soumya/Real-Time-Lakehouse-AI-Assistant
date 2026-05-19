@@ -1,16 +1,16 @@
 # Current Memory / Status
 
-## Current Phase: Phase 1 (Foundation & Batch Lakehouse) Started
+## Current Phase: Phase 1 (Foundation & Batch Lakehouse) execution
 
 ### Recently Completed:
-- **Phase 0 (Project Setup & CI/CD)** is completely finished.
-- Initialized repository structure.
-- Created `.github/workflows/infra.yml` for Terraform.
-- Created `.github/workflows/deploy.yml` for Application tests and deployment.
-- Created initial AWS OIDC integration in `infra/main.tf`.
-- Created Copilot rules (`copilot-instructions.md`) and the `project/` documentation tree.
+- Completed Terraform structure for Phase 1 (`infra/main.tf`, `infra/lakehouse.tf`).
+- Commented out the S3 backend in Terraform to allow for local bootstrapping before migrating state.
+- Created local Python simulator `src/simulator/batch_generator.py` for synthetic data generation using Faker.
+- Created PySpark ETL job `src/jobs/glue_batch_etl.py` which ingests raw data from S3, converts to Apache Iceberg format, and outputs to Silver/Gold prefixes.
+- Created `requirements.txt` to track Python dependencies (`boto3`, `Faker`).
 
 ### What is going on now:
-- We are transitioning into Phase 1. 
-- The immediate next task is to begin expanding Terraform for AWS infrastructure provisioning (S3, IAM, Athena, Glue).
-- Following that, we need to build the Python simulator to emit e-commerce data.
+- We have prepped Phase 1 scripts and infrastructure.
+- User will optionally run Terraform locally to provision S3 buckets, AWS Glue catalog, and Athena workgroup.
+- Next active tasks will be running the python simulator to push raw data to S3, running the Glue job, and verifying the Iceberg table availability in Athena.
+- Then, we'll set up `dbt` (dbt-athena) to define metrics models in the gold layer.

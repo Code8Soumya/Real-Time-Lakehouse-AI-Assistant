@@ -1,0 +1,15 @@
+# AWS SDK for Python, used in simulator to upload to S3
+boto3==1.34.131
+
+# Data generation library used in the simulator
+Faker==25.8.0
+
+# (Optional) Used for running local PySpark transformations/testing before uploading to AWS Glue
+# pyspark==3.4.1 
+
+# To be used later in Phase 4 (LLM Agent Integration)
+# langchain==0.2.6
+# langchain-aws==0.1.6
+# streamlit==1.36.0
+# fastapi==0.111.0
+# uvicorn==0.30.1

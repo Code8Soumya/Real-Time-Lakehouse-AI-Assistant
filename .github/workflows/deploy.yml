@@ -18,8 +18,8 @@ permissions:
 
 env:
   AWS_REGION: ap-south-1
-  ROLE_TO_ASSUME: arn:aws:iam::331651485923:role/github-actions-role # TODO: Replace with actual role ARN
-  ARTIFACT_BUCKET: rt-lakehouse-artifacts-ap-south-1-331651485923 # TODO: Replace with actual bucket name
+  ROLE_TO_ASSUME: arn:aws:iam::331651485923:role/github-actions-role
+  ARTIFACT_BUCKET: rt-lakehouse-data-dev-331651485923 # TODO: Replace with your terraform-generated bucket name
   ECR_REPOSITORY_API: my-project-api # TODO: Replace with actual ECR repo name
 
 jobs:

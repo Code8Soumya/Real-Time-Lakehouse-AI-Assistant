@@ -18,7 +18,7 @@ permissions:
 
 env:
   AWS_REGION: ap-south-1
-  ROLE_TO_ASSUME: arn:aws:iam::331651485923:role/github-actions-role # TODO: Replace with actual role ARN once created
+  ROLE_TO_ASSUME: arn:aws:iam::331651485923:role/github-actions-role
 
 jobs:
   terraform:

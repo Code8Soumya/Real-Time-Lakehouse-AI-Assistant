@@ -1,0 +1,6 @@
+# AWS SDK for Python, used in simulator to upload to S3
+boto3==1.34.131
+
+# Data generation library used in the simulator
+Faker==25.8.0
+

@@ -2,11 +2,13 @@
 
 **Crucial points to keep in mind before modifying files:**
 
-1. **Target Data Format**:
+1. **Target Data Format & S3 Architecture**:
    - **Apache Iceberg** is the unified table format. Any Glue script, Flink app, or dbt model must be strictly compatible with Iceberg. Do not default to plain Parquet or Delta Lake.
+   - We are using a **single S3 Bucket** structure with prefixes (`raw/`, `silver/`, `gold/`, `scripts/`, `athena-results/`) rather than separate buckets.
+   - Region is pinned explicitly to **`ap-south-1`**.
 
 2. **Domain-Specific Boundaries**:
-   - This project strictly simulates an **E-commerce event** domain.
+   - This project strictly simulates an **E-commerce event** domain (Faker library is used to synthesize simple generic users, products, constraints without strict enterprise formats).
    - Supported events ONLY: `page_view`, `search_query`, `add_to_cart`, `remove_from_cart`, `begin_checkout`, `purchase`, `refund_request`, `click_recommendation`, `product_rating`. 
    - Do not add random external domains. Keep dummy data generator strictly focused on these events.
 

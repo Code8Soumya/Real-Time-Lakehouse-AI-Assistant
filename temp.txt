@@ -1,3 +1,0 @@
-github_actions_role_arn = "arn:aws:iam::331651485923:role/github-actions-role"
-
-
