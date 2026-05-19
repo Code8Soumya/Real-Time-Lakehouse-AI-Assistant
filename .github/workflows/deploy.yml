@@ -68,8 +68,8 @@ jobs:
 
       - name: Copy Scripts to S3
         run: |
-          aws s3 cp src/jobs/ s3://${{ env.ARTIFACT_BUCKET }}/glue-scripts/ --recursive --exclude "*" --include "*.py"
-          aws s3 cp src/streaming/ s3://${{ env.ARTIFACT_BUCKET }}/flink-scripts/ --recursive --exclude "*" --include "*.py"
+          aws s3 cp src/jobs/ s3://${{ env.ARTIFACT_BUCKET }}/scripts/ --recursive --exclude "*" --include "*.py"
+          aws s3 cp src/streaming/ s3://${{ env.ARTIFACT_BUCKET }}/scripts/ --recursive --exclude "*" --include "*.py"
 
   # Uncomment below section when deploying FastAPI to App Runner using ECR
   # deploy-api:
