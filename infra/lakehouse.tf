@@ -12,11 +12,12 @@ locals {
   athena_workgroup    = "ecommerce_analytics"
   
   # S3 Prefixes
-  raw_prefix          = "raw/"
-  silver_prefix       = "silver/"
-  gold_prefix         = "gold/"
-  scripts_prefix      = "scripts/"
-  athena_query_prefix = "athena-results/"
+  raw_prefix               = "raw/"
+  silver_prefix            = "silver/"
+  gold_prefix              = "gold/"
+  glue_scripts_prefix      = "glue-scripts/"
+  streaming_scripts_prefix = "flink-scripts/"
+  athena_query_prefix      = "athena-results/"
 }
 
 # ==============================================================================
@@ -43,9 +44,14 @@ resource "aws_s3_object" "gold_folder" {
   key    = local.gold_prefix
 }
 
-resource "aws_s3_object" "scripts_folder" {
+resource "aws_s3_object" "glue_scripts_folder" {
   bucket = aws_s3_bucket.lakehouse.id
-  key    = local.scripts_prefix
+  key    = local.glue_scripts_prefix
+}
+
+resource "aws_s3_object" "streaming_scripts_folder" {
+  bucket = aws_s3_bucket.lakehouse.id
+  key    = local.streaming_scripts_prefix
 }
 
 resource "aws_s3_object" "athena_results_folder" {
@@ -116,7 +122,7 @@ resource "aws_glue_job" "batch_etl_job" {
   role_arn = aws_iam_role.glue_role.arn
 
   command {
-    script_location = "s3://${aws_s3_bucket.lakehouse.id}/${local.scripts_prefix}glue_batch_etl.py"
+    script_location = "s3://${aws_s3_bucket.lakehouse.id}/${local.glue_scripts_prefix}glue_batch_etl.py"
     python_version  = "3"
   }
 

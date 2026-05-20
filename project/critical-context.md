@@ -4,7 +4,7 @@
 
 1. **Target Data Format & S3 Architecture**:
    - **Apache Iceberg** is the unified table format. Any Glue script, Flink app, or dbt model must be strictly compatible with Iceberg. Do not default to plain Parquet or Delta Lake.
-   - We are using a **single S3 Bucket** structure with prefixes (`raw/`, `silver/`, `gold/`, `scripts/`, `athena-results/`) rather than separate buckets.
+   - We are using a **single S3 Bucket** structure with prefixes (`raw/`, `silver/`, `gold/`, `glue-scripts/`, `flink-scripts/`, `athena-results/`) rather than separate buckets.
    - Region is pinned explicitly to **`ap-south-1`**.
 
 2. **Domain-Specific Boundaries**:
