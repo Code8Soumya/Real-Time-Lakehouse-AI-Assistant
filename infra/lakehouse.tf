@@ -216,8 +216,8 @@ resource "aws_cloudwatch_event_target" "glue_trigger" {
   target_id = "StartGlueJob"
 
   # EventBridge specifically expects the ARN for a target Glue Job to use 'glueJob' instead of Terraform's generated 'job'
-  arn       = replace(aws_glue_job.batch_etl_job.arn, ":job/", ":glueJob/")
-  role_arn  = aws_iam_role.eventbridge_glue_role.arn
+  arn      = replace(aws_glue_job.batch_etl_job.arn, ":job/", ":glueJob/")
+  role_arn = aws_iam_role.eventbridge_glue_role.arn
 }
 
 # ==============================================================================
