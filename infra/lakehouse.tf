@@ -29,6 +29,11 @@ resource "aws_s3_bucket" "lakehouse" {
 }
 
 # Create Prefixes (Folders) inside the bucket
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket      = aws_s3_bucket.lakehouse.id
+  eventbridge = true
+}
+
 resource "aws_s3_object" "raw_folder" {
   bucket = aws_s3_bucket.lakehouse.id
   key    = local.raw_prefix
@@ -140,8 +145,75 @@ resource "aws_glue_job" "batch_etl_job" {
 }
 
 # ==============================================================================
-# AMAZON ATHENA WORKGROUP
+# EVENTBRIDGE TRIGGER FOR GLUE JOB
 # ==============================================================================
+
+# IAM Role for EventBridge to start Glue job
+resource "aws_iam_role" "eventbridge_glue_role" {
+  name = "${local.project_prefix}-eb-role-${local.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "events.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "eventbridge_glue_policy" {
+  name = "${local.project_prefix}-eb-glue-policy"
+  role = aws_iam_role.eventbridge_glue_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "glue:StartJobRun"
+        ]
+        Effect = "Allow"
+        Resource = [
+          aws_glue_job.batch_etl_job.arn
+        ]
+      }
+    ]
+  })
+}
+
+# EventBridge Rule
+resource "aws_cloudwatch_event_rule" "s3_raw_upload" {
+  name        = "${local.project_prefix}-s3-raw-upload"
+  description = "Trigger Glue Job when data is uploaded to raw/ folder"
+
+  event_pattern = jsonencode({
+    source      = ["aws.s3"]
+    detail-type = ["Object Created"]
+    detail = {
+      bucket = {
+        name = [aws_s3_bucket.lakehouse.id]
+      }
+      object = {
+        key = [{
+          prefix = local.raw_prefix
+        }]
+      }
+    }
+  })
+}
+
+# EventBridge Target
+resource "aws_cloudwatch_event_target" "glue_trigger" {
+  rule      = aws_cloudwatch_event_rule.s3_raw_upload.name
+  target_id = "StartGlueJob"
+  arn       = aws_glue_job.batch_etl_job.arn
+  role_arn  = aws_iam_role.eventbridge_glue_role.arn
+}
 
 resource "aws_athena_workgroup" "analytics" {
   name = local.athena_workgroup
