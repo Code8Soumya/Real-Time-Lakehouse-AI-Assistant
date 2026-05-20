@@ -1,3 +1,6 @@
+# Data source to get current AWS region dynamically
+data "aws_region" "current" {}
+
 # ==============================================================================
 # MODIFIABLE PARAMETERS (LOCALS)
 # ==============================================================================
@@ -211,9 +214,15 @@ resource "aws_cloudwatch_event_rule" "s3_raw_upload" {
 resource "aws_cloudwatch_event_target" "glue_trigger" {
   rule      = aws_cloudwatch_event_rule.s3_raw_upload.name
   target_id = "StartGlueJob"
-  arn       = aws_glue_job.batch_etl_job.arn
+
+  # EventBridge specifically expects the ARN for a target Glue Job to use 'glueJob' instead of Terraform's generated 'job'
+  arn       = replace(aws_glue_job.batch_etl_job.arn, ":job/", ":glueJob/")
   role_arn  = aws_iam_role.eventbridge_glue_role.arn
 }
+
+# ==============================================================================
+# AMAZON ATHENA WORKGROUP
+# ==============================================================================
 
 resource "aws_athena_workgroup" "analytics" {
   name = local.athena_workgroup
