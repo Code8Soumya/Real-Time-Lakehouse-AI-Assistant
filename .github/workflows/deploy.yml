@@ -1,100 +1,100 @@
 name: Application CI/CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/**'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'src/**'
+    push:
+        branches:
+            - main
+        paths:
+            - "src/**"
+    pull_request:
+        branches:
+            - main
+        paths:
+            - "src/**"
 
 permissions:
-  id-token: write
-  contents: read
+    id-token: write
+    contents: read
 
 env:
-  AWS_REGION: ap-south-1
-  ROLE_TO_ASSUME: arn:aws:iam::331651485923:role/github-actions-role
-  ARTIFACT_BUCKET: rt-lakehouse-data-dev-331651485923 # TODO: Replace with your terraform-generated bucket name
-  ECR_REPOSITORY_API: my-project-api # TODO: Replace with actual ECR repo name
+    AWS_REGION: ap-south-1
+    ROLE_TO_ASSUME: arn:aws:iam::331651485923:role/github-actions-role
+    ARTIFACT_BUCKET: rt-lakehouse-data-dev-331651485923 # TODO: Replace with your terraform-generated bucket name
+    ECR_REPOSITORY_API: my-project-api # TODO: Replace with actual ECR repo name
 
 jobs:
-  lint-and-test:
-    name: Lint and Test Python Apps
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    lint-and-test:
+        name: Lint and Test Python Apps
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+            - name: Setup Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.10"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest pytest-cov
-          if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install flake8 pytest pytest-cov
+                  if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
 
-      - name: Lint with flake8
-        run: |
-          flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+            - name: Lint with flake8
+              run: |
+                  flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
+                  flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      # Add tests here when actual test files exist
-      # - name: Test with pytest
-      #   run: |
-      #     pytest src/tests/
+            # Add tests here when actual test files exist
+            # - name: Test with pytest
+            #   run: |
+            #     pytest src/tests/
 
-  deploy-glue-flink:
-    name: Deploy Glue and Flink Scripts to S3
-    needs: lint-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    deploy-glue-flink:
+        name: Deploy Glue and Flink Scripts to S3
+        needs: lint-and-test
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+                  aws-region: ${{ env.AWS_REGION }}
 
-      - name: Copy Scripts to S3
-        run: |
-          aws s3 cp src/jobs/ s3://${{ env.ARTIFACT_BUCKET }}/glue-scripts/ --recursive --exclude "*" --include "*.py"
-          aws s3 cp src/streaming/ s3://${{ env.ARTIFACT_BUCKET }}/flink-scripts/ --recursive --exclude "*" --include "*.py"
+            - name: Copy Scripts to S3
+              run: |
+                  aws s3 cp src/jobs/ s3://${{ env.ARTIFACT_BUCKET }}/glue-scripts/ --recursive --exclude "*" --include "*.py"
+                  aws s3 cp src/streaming/ s3://${{ env.ARTIFACT_BUCKET }}/flink-scripts/ --recursive --exclude "*" --include "*.py"
 
-  # Uncomment below section when deploying FastAPI to App Runner using ECR
-  # deploy-api:
-  #   name: Build and Push API Container to ECR
-  #   needs: lint-and-test
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v3
-  #
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         role-to-assume: ${{ env.ROLE_TO_ASSUME }}
-  #         aws-region: ${{ env.AWS_REGION }}
-  #
-  #     - name: Login to Amazon ECR
-  #       id: login-ecr
-  #       uses: aws-actions/amazon-ecr-login@v2
-  #
-  #     - name: Build, tag, and push image to Amazon ECR
-  #       env:
-  #         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-  #         IMAGE_TAG: ${{ github.sha }}
-  #       run: |
-  #         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_API:$IMAGE_TAG src/api/
-  #         docker push $ECR_REGISTRY/$ECR_REPOSITORY_API:$IMAGE_TAG
+    # Uncomment below section when deploying FastAPI to App Runner using ECR
+    # deploy-api:
+    #   name: Build and Push API Container to ECR
+    #   needs: lint-and-test
+    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    #   runs-on: ubuntu-latest
+    #   steps:
+    #     - name: Checkout Repository
+    #       uses: actions/checkout@v3
+    #
+    #     - name: Configure AWS Credentials
+    #       uses: aws-actions/configure-aws-credentials@v4
+    #       with:
+    #         role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+    #         aws-region: ${{ env.AWS_REGION }}
+    #
+    #     - name: Login to Amazon ECR
+    #       id: login-ecr
+    #       uses: aws-actions/amazon-ecr-login@v2
+    #
+    #     - name: Build, tag, and push image to Amazon ECR
+    #       env:
+    #         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+    #         IMAGE_TAG: ${{ github.sha }}
+    #       run: |
+    #         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_API:$IMAGE_TAG src/api/
+    #         docker push $ECR_REGISTRY/$ECR_REPOSITORY_API:$IMAGE_TAG
