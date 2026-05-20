@@ -2,15 +2,15 @@
 # MODIFIABLE PARAMETERS (LOCALS)
 # ==============================================================================
 locals {
-  project_prefix      = "rt-lakehouse"
-  environment         = "dev"
-  
+  project_prefix = "rt-lakehouse"
+  environment    = "dev"
+
   # Ensure bucket name is globally unique, typically adding account id
   lakehouse_bucket_name = "${local.project_prefix}-data-${local.environment}-${data.aws_caller_identity.current.account_id}"
-  
-  glue_database_name  = "ecommerce_lakehouse_${local.environment}"
-  athena_workgroup    = "ecommerce_analytics"
-  
+
+  glue_database_name = "ecommerce_lakehouse_${local.environment}"
+  athena_workgroup   = "ecommerce_analytics"
+
   # S3 Prefixes
   raw_prefix               = "raw/"
   silver_prefix            = "silver/"
@@ -100,7 +100,7 @@ resource "aws_iam_role_policy" "glue_s3_access" {
           "s3:DeleteObject",
           "s3:ListBucket"
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           aws_s3_bucket.lakehouse.arn,
           "${aws_s3_bucket.lakehouse.arn}/*"
@@ -127,15 +127,15 @@ resource "aws_glue_job" "batch_etl_job" {
   }
 
   default_arguments = {
-    "--job-language"                     = "python"
-    "--datalake-formats"                 = "iceberg"
-    "--conf"                             = "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions --conf spark.sql.catalog.glue_catalog=org.apache.iceberg.spark.SparkCatalog --conf spark.sql.catalog.glue_catalog.warehouse=s3://${aws_s3_bucket.lakehouse.id}/ --conf spark.sql.catalog.glue_catalog.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog --conf spark.sql.catalog.glue_catalog.io-impl=org.apache.iceberg.aws.s3.S3FileIO"
-    "--S3_LAKEHOUSE_BUCKET"              = aws_s3_bucket.lakehouse.id
-    "--GLUE_DATABASE_NAME"               = local.glue_database_name
+    "--job-language"        = "python"
+    "--datalake-formats"    = "iceberg"
+    "--conf"                = "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions --conf spark.sql.catalog.glue_catalog=org.apache.iceberg.spark.SparkCatalog --conf spark.sql.catalog.glue_catalog.warehouse=s3://${aws_s3_bucket.lakehouse.id}/ --conf spark.sql.catalog.glue_catalog.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog --conf spark.sql.catalog.glue_catalog.io-impl=org.apache.iceberg.aws.s3.S3FileIO"
+    "--S3_LAKEHOUSE_BUCKET" = aws_s3_bucket.lakehouse.id
+    "--GLUE_DATABASE_NAME"  = local.glue_database_name
   }
 
-  glue_version = "4.0"
-  worker_type  = "G.1X"
+  glue_version      = "4.0"
+  worker_type       = "G.1X"
   number_of_workers = 2
 }
 
